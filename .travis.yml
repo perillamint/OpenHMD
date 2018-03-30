@@ -19,9 +19,18 @@ addons:
       - libsdl2-dev
 
 before_install:
-  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glew hidapi sdl2; fi
-  - ./autogen.sh
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew install glew hidapi ninja sdl2; fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then brew upgrade python; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then pyenv global system 3.6; fi
+  - pip3 install meson
 
-install: true # skip install step
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then curl -L https://github.com/ninja-build/ninja/releases/download/v1.8.2/ninja-linux.zip -o ninja-linux.zip; fi
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then unzip ninja-linux.zip; fi
 
-script: ./configure --enable-openglexample && make
+before_script:
+  - export PATH="${PATH}:${PWD}"
+
+script:
+  - meson builddir -Dexamples=simple,opengl
+  - ninja -C builddir
